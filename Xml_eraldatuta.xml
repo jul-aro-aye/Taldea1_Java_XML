@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<prevision generado="2026-04-28T11:02:13" municipio="Legorreta" provincia="Gipuzkoa">
+    <dia fecha="2026-04-28" nombre="Martes">
+        <estado_promedio>muy nuboso</estado_promedio>
+        <temperatura maxima="23" media="17" minima="13"/>
+    </dia>
+    <dia fecha="2026-04-29" nombre="Miércoles">
+        <estado_promedio>lluvioso</estado_promedio>
+        <temperatura maxima="23" media="18" minima="13"/>
+    </dia>
+    <dia fecha="2026-04-30" nombre="Jueves">
+        <estado_promedio>lluvioso</estado_promedio>
+        <temperatura maxima="22" media="17" minima="12"/>
+    </dia>
+    <dia fecha="2026-05-01" nombre="Viernes">
+        <estado_promedio>muy nuboso</estado_promedio>
+        <temperatura maxima="26" media="19" minima="12"/>
+    </dia>
+    <dia fecha="2026-05-02" nombre="Sábado">
+        <estado_promedio>lluvioso</estado_promedio>
+        <temperatura maxima="24" media="19" minima="13"/>
+    </dia>
+</prevision>
