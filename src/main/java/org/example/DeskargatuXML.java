@@ -39,16 +39,20 @@ import java.util.List;
 import java.util.Locale;
 
 public class DeskargatuXML {
-    private static final String AEMET_XML_URL = "https://www.aemet.es/xml/municipios/localidad_20052.xml";
+    private static final String AEMET_XML_URL = "https://www.aemet.es/xml/municipios/localidad_20019.xml";
     private static final String DEFAULT_FILE_NAME = "Xml_eraldatuta.xml";
+    private static final String ORIGINAL_FILE_NAME = "originala.xml";
     private static final int MAX_DAYS = 5;
     private static final Locale BASQUE_LOCALE = Locale.forLanguageTag("eu-ES");
 
     public static void main(String[] args) {
         Path outputPath = resolveOutputPath(args);
+        Path originalPath = resolveOriginalPath(outputPath);
 
         try {
-            downloadAndTransformXml(outputPath);
+            downloadAndTransformXml(originalPath, outputPath);
+            System.out.println("Jatorrizko XML-a ongi deskargatu da:");
+            System.out.println(originalPath.toAbsolutePath());
             System.out.println("XML eraldaketa ongi sortu da:");
             System.out.println(outputPath.toAbsolutePath());
         } catch (Exception e) {
@@ -64,6 +68,15 @@ public class DeskargatuXML {
         }
 
         return findProjectRoot().resolve(DEFAULT_FILE_NAME);
+    }
+
+    private static Path resolveOriginalPath(Path outputPath) {
+        Path parent = outputPath.getParent();
+        if (parent == null) {
+            return findProjectRoot().resolve(ORIGINAL_FILE_NAME);
+        }
+
+        return parent.resolve(ORIGINAL_FILE_NAME).toAbsolutePath();
     }
 
     private static Path findProjectRoot() {
@@ -88,22 +101,27 @@ public class DeskargatuXML {
         return Path.of("").toAbsolutePath();
     }
 
-    private static void downloadAndTransformXml(Path outputPath)
+    private static void downloadAndTransformXml(Path originalPath, Path outputPath)
             throws IOException, InterruptedException, URISyntaxException,
             ParserConfigurationException, SAXException, XPathExpressionException, TransformerException {
+        Path originalParent = originalPath.getParent();
+        if (originalParent != null) {
+            Files.createDirectories(originalParent);
+        }
+
         Path parent = outputPath.getParent();
         if (parent != null) {
             Files.createDirectories(parent);
         }
 
-        Document sourceDocument = downloadSourceDocument();
+        downloadSourceDocument(originalPath);
+        Document sourceDocument = readDocumentFromFile(originalPath);
         Document transformedDocument = buildSimplifiedForecast(sourceDocument);
         writeDocument(transformedDocument, outputPath);
     }
 
-    private static Document downloadSourceDocument()
-            throws IOException, InterruptedException, URISyntaxException,
-            ParserConfigurationException, SAXException {
+    private static void downloadSourceDocument(Path originalPath)
+            throws IOException, InterruptedException, URISyntaxException {
         HttpClient client = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .connectTimeout(Duration.ofSeconds(20))
@@ -116,14 +134,17 @@ public class DeskargatuXML {
                 .GET()
                 .build();
 
-        HttpResponse<InputStream> response =
-                client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        HttpResponse<Path> response =
+                client.send(request, HttpResponse.BodyHandlers.ofFile(originalPath));
 
         if (response.statusCode() != 200) {
             throw new IOException("HTTP erantzun okerra: " + response.statusCode());
         }
+    }
 
-        try (InputStream inputStream = response.body()) {
+    private static Document readDocumentFromFile(Path originalPath)
+            throws IOException, ParserConfigurationException, SAXException {
+        try (InputStream inputStream = Files.newInputStream(originalPath)) {
             DocumentBuilder builder = createDocumentBuilder();
             return builder.parse(inputStream);
         }

@@ -1,38 +1,38 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<iragarpena probintzia="Gipuzkoa" sortua="2026-04-28T13:24:15" udalerria="Legorreta">
-    <eguna data="2026-04-28" izena="Asteartea">
+<iragarpena probintzia="Gipuzkoa" sortua="2026-04-29T08:52:12" udalerria="Beasain">
+    <eguna data="2026-04-29" izena="Asteazkena">
         <eguraldia>
             <deskribapena>Hodeitsu, euri txikiarekin</deskribapena>
             <irudia>24</irudia>
         </eguraldia>
-        <tenperatura batezbestekoa="17" maximoa="23" minimoa="13"/>
-    </eguna>
-    <eguna data="2026-04-29" izena="Asteazkena">
-        <eguraldia>
-            <deskribapena>Behelainoa</deskribapena>
-            <irudia>82</irudia>
-        </eguraldia>
-        <tenperatura batezbestekoa="18" maximoa="23" minimoa="13"/>
+        <tenperatura batezbestekoa="18" maximoa="24" minimoa="14"/>
     </eguna>
     <eguna data="2026-04-30" izena="Osteguna">
         <eguraldia>
-            <deskribapena>Hodei-tarteak eta euria</deskribapena>
-            <irudia>43</irudia>
+            <deskribapena>Hodeitsu</deskribapena>
+            <irudia>14</irudia>
         </eguraldia>
-        <tenperatura batezbestekoa="17" maximoa="22" minimoa="12"/>
+        <tenperatura batezbestekoa="17" maximoa="22" minimoa="13"/>
     </eguna>
     <eguna data="2026-05-01" izena="Ostirala">
         <eguraldia>
-            <deskribapena>Hodeitsu, euriarekin</deskribapena>
-            <irudia>44</irudia>
+            <deskribapena>Hodeitsu</deskribapena>
+            <irudia>14</irudia>
         </eguraldia>
-        <tenperatura batezbestekoa="19" maximoa="26" minimoa="12"/>
+        <tenperatura batezbestekoa="19" maximoa="25" minimoa="13"/>
     </eguna>
     <eguna data="2026-05-02" izena="Larunbata">
+        <eguraldia>
+            <deskribapena>Estalia, ekaitzarekin</deskribapena>
+            <irudia>54</irudia>
+        </eguraldia>
+        <tenperatura batezbestekoa="18" maximoa="22" minimoa="14"/>
+    </eguna>
+    <eguna data="2026-05-03" izena="Igandea">
         <eguraldia>
             <deskribapena>Oso hodeitsu, euriarekin</deskribapena>
             <irudia>45</irudia>
         </eguraldia>
-        <tenperatura batezbestekoa="19" maximoa="24" minimoa="13"/>
+        <tenperatura batezbestekoa="16" maximoa="19" minimoa="12"/>
     </eguna>
 </iragarpena>
