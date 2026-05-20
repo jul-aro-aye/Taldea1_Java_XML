@@ -42,6 +42,7 @@ public class DeskargatuXML {
     private static final String AEMET_XML_URL = "https://www.aemet.es/xml/municipios/localidad_20019.xml";
     private static final String DEFAULT_FILE_NAME = "Xml_eraldatuta.xml";
     private static final String ORIGINAL_FILE_NAME = "originala.xml";
+    private static final String SHARED_OUTPUT_DIRECTORY = "XML_eguraldirako";
     private static final int MAX_DAYS = 5;
     private static final Locale BASQUE_LOCALE = Locale.forLanguageTag("eu-ES");
 
@@ -67,7 +68,7 @@ public class DeskargatuXML {
             return Path.of(args[0]).toAbsolutePath();
         }
 
-        return findProjectRoot().resolve(DEFAULT_FILE_NAME);
+        return resolveSharedOutputDirectory().resolve(DEFAULT_FILE_NAME);
     }
 
     private static Path resolveOriginalPath(Path outputPath) {
@@ -99,6 +100,17 @@ public class DeskargatuXML {
         }
 
         return Path.of("").toAbsolutePath();
+    }
+
+    private static Path resolveSharedOutputDirectory() {
+        Path projectRoot = findProjectRoot().toAbsolutePath();
+        Path parentDirectory = projectRoot.getParent();
+
+        if (parentDirectory == null) {
+            return projectRoot.resolve(SHARED_OUTPUT_DIRECTORY);
+        }
+
+        return parentDirectory.resolve(SHARED_OUTPUT_DIRECTORY).toAbsolutePath();
     }
 
     private static void downloadAndTransformXml(Path originalPath, Path outputPath)
