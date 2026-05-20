@@ -183,8 +183,8 @@ public class DeskargatuXML {
         outputDocument.appendChild(root);
 
         for (Element sourceDay : selectedDays) {
-            LocalDate date = LocalDate.parse(sourceDay.getAttribute("fecha"));
-            EguraldiInfo eguraldiInfo = calculateAverageWeather(sourceDay);
+            LocalDate date = LocalDate.parse(readString(sourceDay, "@fecha", xPath));
+            EguraldiInfo eguraldiInfo = calculateAverageWeather(sourceDay, xPath);
 
             Element outputDay = outputDocument.createElement("eguna");
             outputDay.setAttribute("data", date.toString());
@@ -197,9 +197,9 @@ public class DeskargatuXML {
             outputDay.appendChild(eguraldia);
 
             Element temperature = outputDocument.createElement("tenperatura");
-            temperature.setAttribute("minimoa", readTemperatureValue(sourceDay, "minima"));
-            temperature.setAttribute("maximoa", readTemperatureValue(sourceDay, "maxima"));
-            temperature.setAttribute("batezbestekoa", String.valueOf(calculateAverageTemperature(sourceDay)));
+            temperature.setAttribute("minimoa", readTemperatureValue(sourceDay, "minima", xPath));
+            temperature.setAttribute("maximoa", readTemperatureValue(sourceDay, "maxima", xPath));
+            temperature.setAttribute("batezbestekoa", String.valueOf(calculateAverageTemperature(sourceDay, xPath)));
             outputDay.appendChild(temperature);
 
             root.appendChild(outputDay);
@@ -223,7 +223,7 @@ public class DeskargatuXML {
 
             fallbackDays.add(dayElement);
 
-            String dateText = dayElement.getAttribute("fecha");
+            String dateText = readString(dayElement, "@fecha", xPath);
             if (dateText == null || dateText.isBlank()) {
                 continue;
             }
@@ -239,8 +239,9 @@ public class DeskargatuXML {
         return new ArrayList<>(source.subList(0, endIndex));
     }
 
-    private static EguraldiInfo calculateAverageWeather(Element dayElement) {
-        List<EguraldiMota> motak = getMostDetailedWeatherTypes(dayElement);
+    private static EguraldiInfo calculateAverageWeather(Element dayElement, XPath xPath)
+            throws XPathExpressionException {
+        List<EguraldiMota> motak = getMostDetailedWeatherTypes(dayElement, xPath);
         if (motak.isEmpty()) {
             return new EguraldiInfo(14, "Hodeitsu");
         }
@@ -291,36 +292,33 @@ public class DeskargatuXML {
         return selectAveragedType(averageSeverity, averageCloudiness).toInfo();
     }
 
-    private static List<EguraldiMota> getMostDetailedWeatherTypes(Element dayElement) {
-        NodeList weatherNodes = dayElement.getElementsByTagName("estado_cielo");
-        List<Element> candidates = new ArrayList<>();
+    private static List<EguraldiMota> getMostDetailedWeatherTypes(Element dayElement, XPath xPath)
+            throws XPathExpressionException {
+        NodeList weatherNodes = readNodes(dayElement, "./estado_cielo", xPath);
+        List<Node> candidates = new ArrayList<>();
         int bestPeriodHours = Integer.MAX_VALUE;
 
         for (int i = 0; i < weatherNodes.getLength(); i++) {
             Node node = weatherNodes.item(i);
-            if (!(node instanceof Element element)) {
-                continue;
-            }
-
-            String description = element.getAttribute("descripcion").trim();
+            String description = readString(node, "@descripcion", xPath);
             if (description.isBlank()) {
                 continue;
             }
 
-            int periodHours = parsePeriodHours(element.getAttribute("periodo"));
+            int periodHours = parsePeriodHours(readString(node, "@periodo", xPath));
             if (periodHours < bestPeriodHours) {
                 bestPeriodHours = periodHours;
                 candidates.clear();
             }
 
             if (periodHours == bestPeriodHours) {
-                candidates.add(element);
+                candidates.add(node);
             }
         }
 
         List<EguraldiMota> motak = new ArrayList<>();
-        for (Element element : candidates) {
-            motak.add(classifyWeatherDescription(element.getAttribute("descripcion")));
+        for (Node candidate : candidates) {
+            motak.add(classifyWeatherDescription(readString(candidate, "@descripcion", xPath)));
         }
         return motak;
     }
@@ -504,22 +502,15 @@ public class DeskargatuXML {
         return Math.max(2, Math.min(5, cloudiness));
     }
 
-    private static int calculateAverageTemperature(Element dayElement) {
-        NodeList temperatureData = dayElement.getElementsByTagName("dato");
+    private static int calculateAverageTemperature(Element dayElement, XPath xPath)
+            throws XPathExpressionException {
+        NodeList temperatureData = readNodes(dayElement, "./temperatura/dato", xPath);
         int total = 0;
         int count = 0;
 
         for (int i = 0; i < temperatureData.getLength(); i++) {
             Node node = temperatureData.item(i);
-            if (!(node.getParentNode() instanceof Element parent)) {
-                continue;
-            }
-
-            if (!"temperatura".equals(parent.getTagName())) {
-                continue;
-            }
-
-            String value = node.getTextContent().trim();
+            String value = readString(node, "text()", xPath);
             if (value.isBlank()) {
                 continue;
             }
@@ -532,28 +523,24 @@ public class DeskargatuXML {
             return Math.round((float) total / count);
         }
 
-        int min = Integer.parseInt(readTemperatureValue(dayElement, "minima"));
-        int max = Integer.parseInt(readTemperatureValue(dayElement, "maxima"));
+        int min = Integer.parseInt(readTemperatureValue(dayElement, "minima", xPath));
+        int max = Integer.parseInt(readTemperatureValue(dayElement, "maxima", xPath));
         return Math.round((min + max) / 2.0f);
     }
 
-    private static String readTemperatureValue(Element dayElement, String tagName) {
-        NodeList temperatureNodes = dayElement.getElementsByTagName("temperatura");
-        if (temperatureNodes.getLength() == 0) {
-            return "";
-        }
+    private static String readTemperatureValue(Element dayElement, String tagName, XPath xPath)
+            throws XPathExpressionException {
+        return readString(dayElement, "./temperatura/" + tagName + "/text()", xPath);
+    }
 
-        Node temperatureNode = temperatureNodes.item(0);
-        if (!(temperatureNode instanceof Element temperatureElement)) {
-            return "";
-        }
+    private static String readString(Object source, String expression, XPath xPath)
+            throws XPathExpressionException {
+        return xPath.evaluate(expression, source).trim();
+    }
 
-        NodeList values = temperatureElement.getElementsByTagName(tagName);
-        if (values.getLength() == 0) {
-            return "";
-        }
-
-        return values.item(0).getTextContent().trim();
+    private static NodeList readNodes(Object source, String expression, XPath xPath)
+            throws XPathExpressionException {
+        return (NodeList) xPath.evaluate(expression, source, XPathConstants.NODESET);
     }
 
     private static void writeDocument(Document document, Path outputPath)
